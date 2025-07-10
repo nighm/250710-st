@@ -2,16 +2,16 @@ import os
 import pandas as pd
 from datetime import datetime
 import re
+import argparse
 
 CSV_PATH = os.path.join('data', '测试结果-20250709.csv')
-CASES_DIR = 'cases'
+CASES_DIR = os.path.join('data', 'cases', 'md')
 
 os.makedirs(CASES_DIR, exist_ok=True)
 
 def safe_part(s):
     if pd.isna(s) or str(s).strip().lower() == 'nan':
         return ''
-    # 去除所有空格（包括全角、半角、所有位置）
     return re.sub(r'[\s\u3000]+', '', str(s)).replace('/', '_').replace('\\', '_').replace(':', '_')
 
 def clean_value(v):
@@ -26,13 +26,7 @@ def beautify_multiline(value):
     lines = [l.strip() for l in v.splitlines() if l.strip()]
     return '\n'.join([f"- {l}" for l in lines])
 
-def main():
-    df = pd.read_csv(CSV_PATH, encoding='utf-8-sig')
-    if df.empty:
-        print('CSV文件无内容')
-        return
-    row = df.iloc[0]
-    # 文件名格式：需求编号-测试用例编号-对应功能项_子功能1_子功能2_子功能3.md
+def write_case_md(row):
     req_id = safe_part(row.get('需求编号', ''))
     case_id = safe_part(row.get('测试用例编号', ''))
     func_parts = [row.get('对应功能项', '')]
@@ -54,23 +48,18 @@ def main():
             level = level
     else:
         level = ''
-    # 组装内容
     content = [f"# {title}\n"]
-    # 需求编号
     content.append(f"需求编号: {clean_value(row.get('需求编号', ''))}\n")
-    # 需求描述及子功能1/2/3
     content.append(f"需求描述: {clean_value(row.get('需求描述', ''))}\n")
     content.append(f"子功能1: {clean_value(row.get('Unnamed: 2', ''))}\n")
     content.append(f"子功能2: {clean_value(row.get('Unnamed: 3', ''))}\n")
     content.append(f"子功能3: {clean_value(row.get('Unnamed: 4', ''))}\n")
     content.append("")
-    # 对应功能项及其子功能1/2/3
     content.append(f"对应功能项: {clean_value(row.get('对应功能项', ''))}\n")
     content.append(f"子功能1: {clean_value(row.get('Unnamed: 6', ''))}\n")
     content.append(f"子功能2: {clean_value(row.get('Unnamed: 7', ''))}\n")
     content.append(f"子功能3: {clean_value(row.get('Unnamed: 8', ''))}\n")
     content.append("")
-    # 其余字段
     fields = [
         ('测试用例编号', '测试用例编号'),
         ('测试用例名称', '测试用例名称'),
@@ -99,6 +88,26 @@ def main():
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write('\n'.join(content))
     print(f'已生成: {filepath}')
+
+def main():
+    parser = argparse.ArgumentParser(description='将CSV用例批量或单条生成md文件')
+    parser.add_argument('--all', action='store_true', help='批量生成所有用例')
+    parser.add_argument('--index', type=int, help='只生成第N条用例（从0开始）')
+    args = parser.parse_args()
+    df = pd.read_csv(CSV_PATH, encoding='utf-8-sig')
+    if df.empty:
+        print('CSV文件无内容')
+        return
+    if args.all:
+        for i, row in df.iterrows():
+            write_case_md(row)
+    elif args.index is not None:
+        if 0 <= args.index < len(df):
+            write_case_md(df.iloc[args.index])
+        else:
+            print(f'索引超出范围：{args.index}')
+    else:
+        write_case_md(df.iloc[0])
 
 if __name__ == '__main__':
     main() 
