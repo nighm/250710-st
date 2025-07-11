@@ -3,7 +3,7 @@ import subprocess
 
 def run(cmd):
     print(f"运行: {cmd}")
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='utf-8', errors='ignore')
     if result.stdout:
         print(result.stdout)
     if result.stderr:
@@ -17,7 +17,7 @@ def main():
     # 添加所有文件
     run('git add .')
     # 提交
-    run('git commit -m "init: 项目初始化及自动化脚本"')
+    run('git commit -m "feat: 智能网页自动化测试框架 - 支持智能登录、动态页面分析、灵活测试执行"')
     # 设置主分支
     run('git branch -M main')
     # 设置远程origin
