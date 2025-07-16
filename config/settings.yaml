@@ -1,4 +1,7 @@
 # 配置文件示例
 url: http://192.168.24.100
-username: your_username
-password: your_password
+username: super
+password: admin123
+timeout: 30
+headless: false
+slow_mo: 1000
