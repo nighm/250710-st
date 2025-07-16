@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-# 主入口脚本
-if __name__ == "__main__":
-    print("自动化测试项目入口")
-=======
 """
 自动化测试项目主入口
 提供测试执行的主要接口
@@ -96,4 +91,3 @@ def _check_project_structure():
 
 if __name__ == "__main__":
     main()
->>>>>>> 774b37bda5162e77efbb81cd900a442bf8883c86
